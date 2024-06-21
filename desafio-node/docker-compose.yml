@@ -15,14 +15,19 @@ services:
     build: ./node-app
     container_name: node-app
     volumes:
-      - ./node-app:/app
-      - /app/node_modules
+      - ./node-app:/usr/src/app
+      - /usr/src/app/node_modules
     environment:
       - NODE_ENV=development
     ports:
       - "3000:3000"
     depends_on:
       - mysql
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
   mysql:
     image: mysql:5.7
@@ -32,6 +37,11 @@ services:
     volumes:
       - mysql-data:/var/lib/mysql
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -proot"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
 volumes:
   mysql-data:
